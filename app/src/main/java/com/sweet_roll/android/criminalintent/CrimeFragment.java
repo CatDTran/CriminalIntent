@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
@@ -23,14 +25,17 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import java.io.File;
 import java.util.Date;
 import java.util.UUID;
+import com.sweet_roll.android.criminalintent.PictureUtils;
 
 /**
  * Created by trand_000 on 12/19/2015.
  */
 public class CrimeFragment extends Fragment {
     private Crime mCrime;
+    private File mPhotoFile;
     private EditText mTitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
@@ -43,6 +48,7 @@ public class CrimeFragment extends Fragment {
     private static final String DIALOG_DATE = "DialogDate";
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_CONTACT = 1;
+    private static final int REQUEST_PHOTO = 2;
 
     public static CrimeFragment newInstance(UUID crimeId)
     {
@@ -60,6 +66,7 @@ public class CrimeFragment extends Fragment {
         UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
         //get crime from the one and only singleton CrimeLab associated with CrimePagerActivity
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
+        mPhotoFile = CrimeLab.get(getActivity()).getPhotoFile(mCrime);
     }
     //CALLED BY HOSTING ACTIVITY TO CREATE FRAGMENT'S VIEW
     @Override
@@ -146,6 +153,24 @@ public class CrimeFragment extends Fragment {
 
         mPhotoButton = (ImageButton) v.findViewById(R.id.crime_camera);
         mPhotoView = (ImageView) v.findViewById(R.id.crime_photo);
+        updatePhotoView();
+        final Intent captureImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        boolean canTakePhoto = mPhotoFile != null && captureImage.resolveActivity(packageManager) != null;
+        mPhotoButton.setEnabled(canTakePhoto);
+        if(canTakePhoto)
+        {
+            Uri uri = Uri.fromFile(mPhotoFile);
+            captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        }
+        mPhotoButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivityForResult(captureImage, REQUEST_PHOTO);
+            }
+        });
+
         return v;
     }
     //ONPAUSED()
@@ -186,6 +211,20 @@ public class CrimeFragment extends Fragment {
         return report;
     }
 
+    //load Bitmap into ImageView
+    private void updatePhotoView()
+    {
+        if(mPhotoFile == null || !mPhotoFile.exists())
+        {
+            mPhotoView.setImageDrawable(null);
+        }
+        else
+        {
+            Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(),getActivity());
+            mPhotoView.setImageBitmap(bitmap);
+        }
+    }
+
     //
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -216,6 +255,10 @@ public class CrimeFragment extends Fragment {
             {
                 c.close();
             }
+        }
+        else if(requestCode == REQUEST_PHOTO)
+        {
+            updatePhotoView();
         }
     }
 }
