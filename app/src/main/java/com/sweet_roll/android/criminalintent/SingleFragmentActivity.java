@@ -1,6 +1,7 @@
 package com.sweet_roll.android.criminalintent;
 
 import android.os.Bundle;
+import android.support.annotation.LayoutRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -12,11 +13,16 @@ import android.support.v7.app.AppCompatActivity;
 public abstract class SingleFragmentActivity extends AppCompatActivity{
 
     protected abstract Fragment createFragment();
+    @LayoutRes
+    protected int getLayoutResId()//child class can override this method
+    {
+        return R.layout.activity_fragment;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fragment);
+        setContentView(getLayoutResId());
         FragmentManager fm = getSupportFragmentManager();//get fragment manager for this FragmentActivity
         Fragment fragment = fm.findFragmentById(R.id.fragment_container);//this fragment is from support version
         if(fragment == null)//if fragment manager could not find fragment_container's view
