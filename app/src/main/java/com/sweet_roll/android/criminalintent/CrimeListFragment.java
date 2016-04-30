@@ -188,7 +188,7 @@ public class CrimeListFragment extends Fragment{
         activity.getSupportActionBar().setSubtitle(subtitle);
     }
     //method to update UI
-    private void updateUI()
+    public void updateUI()
     {
         CrimeLab crimeLab = CrimeLab.get(getActivity());//the one and only CrimeLab singleton for this Activity
         List<Crime> crimes = crimeLab.getCrimes();//get the list of crimes

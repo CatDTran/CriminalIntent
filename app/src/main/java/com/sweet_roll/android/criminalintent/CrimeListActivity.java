@@ -6,7 +6,7 @@ import android.support.v4.app.Fragment;
 /**
  * Created by trand_000 on 12/22/2015.
  */
-public class CrimeListActivity extends SingleFragmentActivity implements CrimeListFragment.Callbacks{
+public class CrimeListActivity extends SingleFragmentActivity implements CrimeListFragment.Callbacks, CrimeFragment.Callbacks{
 
     @Override
     protected Fragment createFragment()
@@ -33,5 +33,10 @@ public class CrimeListActivity extends SingleFragmentActivity implements CrimeLi
             getSupportFragmentManager().beginTransaction().replace(R.id.detail_fragment_container, newDetail).commit();//replace the fragment container
                                                                                                                        //with the new fragment
         }
+    }
+    public void onCrimeUpdated(Crime crime)
+    {
+        CrimeListFragment listFragment = (CrimeListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        listFragment.updateUI();
     }
 }
